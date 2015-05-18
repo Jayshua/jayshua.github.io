@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script> -->
+        <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+        <script src="yaml.js"></script>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <div id="main"></div>
+
+<script type="text/x-template" id="yaml">
+name:
+  type: text
+  label: Name
+  required: true
+
+code:
+  type: textarea
+  label: Code
+  value: >
+    This is some default text for you inside some
+    type of yaml string thing that I don't know the name of.'
+</script>
+
+        <script type="text/javascript">
+        // Simple helper for creating html elements
+        var Brick = function(element, attributes, children) {
+            this.element = element;
+            this.children = children;
+            this.attributes = attributes;
+        };
+
+        Brick.prototype.render = function() {
+            var element = document.createElement(this.element);
+
+            for (var key in this.attributes)
+                element.setAttribute(key, this.attributes[key]);
+
+            if (this.children) {
+                if (typeof this.children == "string") {
+                    element.innerHTML = this.children;
+                } else {
+                    for (var i = 0; i < this.children.length; i++)
+                        element.appendChild(this.children[i].render());
+                }
+            }
+
+            return element;
+        };
+
+        Brick.prototype.append = function(child) {
+            if (typeof this.children == "string")
+                throw "You tried to append a child to an HTML tag that already has a string as a descendant";
+
+            if (!this.children)
+                this.children = [];
+
+            this.children.push(child);
+        };
+
+
+
+
+
+
+        var fields = document.getElementById("yaml").innerHTML; //JFCustomWidget.getWidgetSetting('fields');
+        fields = YAML.parse(fields);
+
+        var form = new Brick("div", {"class": "form-group"});
+
+        for (var fieldName in fields) {
+        if (fields.hasOwnProperty(fieldName)) {
+            var field = fields[fieldName];
+            var label, input;
+
+            // Create the label element
+            label = new Brick("label", {
+                "for": fieldName
+            }, field.label + ":");
+
+            
+            // We need the "name" attribute to be set on the input tag.
+            field.name = fieldName;
+
+            // Remove label attributes from field object that shouldn't appear
+            // on the input tag
+            delete field.label;
+
+
+            // Unfortunately, textareas need to be treated differently.
+            // This is the first thing I would change if I could go back in time.
+            if (field.type == "textarea") {
+                // We need the value to be set as innerHTML on a textarea.
+                // because of this, we also delete the value from the field attributes list
+                var value = field.value;
+                delete field.value;
+                input = new Brick("textarea", field, value);
+            } else {
+                input = new Brick("input", field);
+            }
+
+            var container = new Brick("div", {"class": "input-group"}, [label, input]);
+            form.append(container);
+        }
+        }
+
+        document.getElementById("main").appendChild(form.render());
+
+
+
+
+
+
+
+        //always subscribe to ready event and implement widget related code
+        //inside callback function , it is the best practice while developing widgets
+        
+
+        // JFCustomWidget.subscribe("ready", function(){
+        //     var fields = JFCustomWidget.getWidgetSetting('fields');
+        //     fields = YAML.parse(fields);
+
+        //     for (var fieldName in fields) {
+        //         if (fields.hasOwnProperty(fieldName)) {
+                    
+
+        //             var field = fields[fieldName];
+                    
+        //             var input = document.createElement("input");
+        //             input.setAttribute("type", field.type);
+        //             input.setAttribute("name", fieldName);
+
+        //             var label = document.createElement("label");
+        //             label.setAttribute("for", fieldName);
+        //             label.innerText = field.label;
+
+
+        //             document.getElementById("main").appendChild(label);
+        //             document.getElementById("main").appendChild(input);
+
+        //         }
+        //     }
+
+
+
+        //     JFCustomWidget.subscribe("submit", function(){
+        //         var msg = {
+        //             //you should valid attribute to data for JotForm
+        //             //to be able to use youw widget as required
+        //             valid: true,
+        //             value: "Temp"
+        //         }
+        //         // send value to JotForm
+        //         JFCustomWidget.sendSubmit(msg);
+        //     });
+        // });
+        </script>
+    </body>
+</html>
